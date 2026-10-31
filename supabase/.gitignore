@@ -1,0 +1,3 @@
+# Local CLI state, including the linked project reference.
+.branches/
+.temp/

@@ -1,0 +1,16 @@
+# Local project identifier; link the hosted project separately with supabase link.
+project_id = "uw-score-tracker"
+
+[db]
+major_version = 17
+
+[db.seed]
+enabled = false
+
+[auth]
+site_url = "http://localhost:8000"
+additional_redirect_urls = ["http://localhost:8000/"]
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
