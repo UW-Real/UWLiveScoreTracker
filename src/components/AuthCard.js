@@ -104,8 +104,7 @@ export default function AuthCard() {
       {user ? (
         <>
           <div className="account-check" aria-hidden="true">✓</div>
-          <p className="eyebrow">YOU’RE IN</p>
-          <h2 id="account-title">Welcome back{user.user_metadata?.name ? `, ${user.user_metadata.name}` : ""}.</h2>
+          <h2 id="account-title">Signed in{user.user_metadata?.name ? ` as ${user.user_metadata.name}` : ""}</h2>
           <p className="card-description">You’re signed in to UW Score Tracker.</p>
           <p className="account-email">{user.email}</p>
           <button className="submit-button" onClick={handleSignOut} disabled={pending}>
@@ -118,8 +117,8 @@ export default function AuthCard() {
             <button type="button" aria-pressed={!creatingAccount} disabled={pending} onClick={() => changeMode("signin")}>Sign in</button>
             <button type="button" aria-pressed={creatingAccount} disabled={pending} onClick={() => changeMode("signup")}>Create account</button>
           </div>
-          <h2 id="account-title">{creatingAccount ? "Let’s get you started." : "Good to see you."}</h2>
-          <p className="card-description">{creatingAccount ? "A few details, and you’re on your way." : "Sign in to your account to get started."}</p>
+          <h2 id="account-title">{creatingAccount ? "Create account" : "Sign in"}</h2>
+          <p className="card-description">{creatingAccount ? "Sign up to start making picks." : "Sign in to your UW Score Tracker account."}</p>
           <form key={mode} onSubmit={handleSubmit}>
             <fieldset disabled={pending || checkingSession}>
               <legend className="sr-only">{creatingAccount ? "Create your account" : "Sign in to your account"}</legend>
@@ -148,7 +147,7 @@ export default function AuthCard() {
             </fieldset>
           </form>
           <p className="switch-prompt">
-            {creatingAccount ? "Already have an account?" : "New around here?"}{" "}
+            {creatingAccount ? "Already have an account?" : "Don’t have an account?"}{" "}
             <button type="button" disabled={pending} onClick={() => changeMode(creatingAccount ? "signin" : "signup")}>
               {creatingAccount ? "Sign in" : "Create an account"}
             </button>

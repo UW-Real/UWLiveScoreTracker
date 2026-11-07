@@ -1,14 +1,18 @@
 import "./globals.css";
+import SiteHeader from "@/components/SiteHeader";
 
 export const metadata = {
   title: "UW Score Tracker",
-  description: "Your scores. One place. Sign in or create your UW Score Tracker account.",
+  description: "Live scores for every University of Washington Division I sport.",
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SiteHeader />
+        {children}
+      </body>
     </html>
   );
 }
