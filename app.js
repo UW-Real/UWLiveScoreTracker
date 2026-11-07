@@ -136,6 +136,7 @@ const accountDirectory = serverSecretKey
   : null;
 
 app.use("/auth", createUserRouter({ supabase, accountDirectory }));
+app.use("/score", requireAuth, require("./api/score").Router); // protected route
 
 app.head("/", (req, res) => res.status(200).end()); // Possible keepalive
 
