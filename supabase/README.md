@@ -68,8 +68,30 @@ npm run supabase:push
 ```
 
 Create a new migration for each subsequent change instead of editing one already
-applied. The current app has no score persistence API, so no score tables are
-introduced yet.
+applied.
+
+## Football scores
+
+`20261107000000_collect_football_scores.sql` adds `football_games` (latest state,
+freshness timestamps and polling deadlines) and `football_score_changes`
+(baseline and score/status history). Review and apply this migration before
+running `npm run collect:scores`; neither the app nor worker applies it automatically.
+Preview pending changes before pushing them to your hosted project.
+
+Both tables enable RLS and allow authenticated reads. Anonymous access and
+browser writes are denied. `record_football_observation(jsonb, boolean)` is
+executable only by `service_role`; it atomically updates the latest observation
+and history under a per-game lock. The collector uses the server-only secret or
+service-role key; the Express score route uses the caller's authenticated client.
+
+Discovery seeds one baseline per existing game and refreshes schedule metadata
+without overwriting live observations. Repeated/older observations are ignored,
+clock-only changes do not append history, and final recheck deadlines persist.
+
+`football_scores.test.sql` replays score/status transitions, corrections,
+duplicate/older observations, failed writes, polling deadlines and role access.
+It rolls back all fixtures. [The integration guide](../api/tests/README.md) also
+covers a disposable PostgreSQL/PostgREST setup without hosted writes.
 
 ## Local database tests
 

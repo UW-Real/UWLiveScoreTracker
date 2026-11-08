@@ -6,7 +6,7 @@ import ScoresSection from "@/components/ScoresSection";
 // A tab per sport, with that sport's scores below. Follows the WAI-ARIA tabs
 // pattern: only the selected tab is in the Tab order, and the arrow keys and
 // Home/End move between tabs.
-export default function SportTabs({ sports, scoresBySport = {} }) {
+export default function SportTabs({ sports, scoresBySport = {}, emptyMessages = {} }) {
   const [selectedId, setSelectedId] = useState(sports[0].id);
   const tabRefs = useRef({});
 
@@ -77,6 +77,7 @@ export default function SportTabs({ sports, scoresBySport = {} }) {
         <ScoresSection
           sportName={selectedSport.name}
           games={scoresBySport[selectedSport.id]}
+          emptyMessage={emptyMessages[selectedSport.id]}
         />
       </div>
     </div>

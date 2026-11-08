@@ -50,6 +50,22 @@ h1, h2, h3 { margin: 0; }
 .sport-panel-title { margin-bottom: 12px; font-size: 20px; font-weight: 800; }
 
 /* Scores */
+.scores-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 12px; }
+.scores-toolbar .page-title { margin-bottom: 0; }
+.score-refresh-button { flex: none; min-height: 36px; padding: 8px 12px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface-raised); color: var(--foreground); font-size: 13px; font-weight: 700; }
+.score-refresh-button:hover:not(:disabled) { border-color: var(--purple-light); }
+.scores-feed-status { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 16px; color: var(--muted); font-size: 12px; }
+.scores-feed-status + .form-notice, .form-notice + .sport-tabs { margin-bottom: 16px; }
+.score-sign-in { color: var(--gold); text-decoration: underline; }
+.score-api-log { margin-top: 24px; padding: 16px; border: 1px solid var(--border); border-radius: 6px; background: var(--surface); font-size: 12px; }
+.score-api-log summary { cursor: pointer; overflow-wrap: anywhere; line-height: 1.6; }
+.score-api-log > summary { color: var(--gold); font-size: 14px; font-weight: 700; }
+.score-api-log-description { margin: 12px 0; color: var(--muted); line-height: 1.6; }
+.score-api-log-entries { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.score-api-log-entries > li { padding: 8px; border-radius: 4px; background: var(--background); }
+.score-api-log pre { max-height: 360px; overflow: auto; margin-bottom: 0; padding: 12px; border: 1px solid var(--border); font-size: 12px; }
+.api-log-success { color: var(--success); font-weight: 700; }
+.api-log-error { color: #fca5a5; font-weight: 700; }
 .scores-section { border: 1px solid var(--border); border-radius: 6px; background: var(--surface); }
 .scores-heading { padding: 10px 16px; border-bottom: 1px solid var(--border); color: var(--muted); font-size: 12px; font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
 .scores-empty { padding: 40px 16px; text-align: center; }

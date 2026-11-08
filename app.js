@@ -7,6 +7,7 @@ const crypto = require("node:crypto");
 const next = require("next");
 const { createClient } = require("@supabase/supabase-js");
 const { createUserRouter } = require("./api/user");
+const { createServerSupabaseClient } = require("./api/supabase");
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config({ path: ".env.development" });
@@ -40,6 +41,7 @@ app.use(
     // Supabase access tokens are sent as Bearer tokens, so cookie credentials
     // are not needed for these API requests.
     credentials: false,
+    exposedHeaders: process.env.NODE_ENV === "development" ? ["X-Score-Request-Id"] : [],
   })
 );
 
@@ -130,9 +132,7 @@ async function requireAuth(req, res, next) {
 // This separate server-only client never receives a user's session.
 const serverSecretKey = process.env.SUPABASE_SECRET_KEY || process.env.SUPABASE_SERVICE_ROLE_KEY;
 const accountDirectory = serverSecretKey
-  ? createClient(supabaseUrl, serverSecretKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
+  ? createServerSupabaseClient()
   : null;
 
 app.use("/auth", createUserRouter({ supabase, accountDirectory }));

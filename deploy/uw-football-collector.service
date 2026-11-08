@@ -1,0 +1,19 @@
+[Unit]
+Description=UW football score collector
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=simple
+User=uw-score-tracker
+WorkingDirectory=/srv/uw-score-tracker
+Environment=NODE_ENV=production
+EnvironmentFile=/etc/uw-score-tracker.env
+ExecStart=/usr/bin/node /srv/uw-score-tracker/api/collectScores.js
+Restart=always
+RestartSec=10
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+[Install]
+WantedBy=multi-user.target
