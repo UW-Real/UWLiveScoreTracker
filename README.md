@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # UW Score Tracker
 
 A live scores dashboard for University of Washington sports. The app uses Next.js
@@ -63,3 +64,6 @@ Clock-only updates do not create history rows.
 
 Signed-in users can read the score tables. The server-side collector writes through
 the `record_football_observation` database function.
+=======
+# Fill me out!!!
+>>>>>>> 2b506b37e01ab02acaca79400155bbbba5d0bb9e
