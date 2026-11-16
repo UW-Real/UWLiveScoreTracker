@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 
-const helpers = import("../../src/utils/footballScores.js");
+const helpers = import("../src/utils/footballScores.js");
 const game = {
   eventId: "123", opponent: { name: "Penn State" }, homeAway: "away",
   state: "in", status: "STATUS_IN_PROGRESS", completed: false,
@@ -26,6 +26,16 @@ test("dashboard shows latest final and upcoming game, deduplicating event IDs", 
   assert.deepEqual(footballGames({ game: final, nextGame: next }).map((row) => row.status), ["final", "upcoming"]);
   assert.equal(footballGames({ game, nextGame: game }).length, 1);
   assert.deepEqual(footballGames(null), []);
+});
+
+test("dashboard includes previous football results without repeating the latest final", async () => {
+  const { footballGames } = await helpers;
+  const final = { ...game, completed: true, state: "post" };
+  const older = { ...final, eventId: "older", uwScore: 21, opponentScore: 14 };
+  const next = { ...game, eventId: "next", state: "pre" };
+  const rows = footballGames({ game: final, nextGame: next, previousGames: [final, older] });
+  assert.deepEqual(rows.map((row) => row.id), ["123", "next", "older"]);
+  assert.equal(rows[2].uwScore, 21);
 });
 
 test("refresh is frequent during games and fifteen minutes before kickoff", async () => {

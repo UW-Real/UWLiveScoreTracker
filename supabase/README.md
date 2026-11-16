@@ -90,7 +90,7 @@ clock-only changes do not append history, and final recheck deadlines persist.
 
 `football_scores.test.sql` replays score/status transitions, corrections,
 duplicate/older observations, failed writes, polling deadlines and role access.
-It rolls back all fixtures. [The integration guide](../api/tests/README.md) also
+It rolls back all fixtures. [The integration guide](../tests/README.md) also
 covers a disposable PostgreSQL/PostgREST setup without hosted writes.
 
 ## Local database tests
@@ -108,3 +108,18 @@ username validation and uniqueness, email syncing, deletion, and access controls
 
 References: [Supabase migrations](https://supabase.com/docs/guides/deployment/database-migrations),
 [Auth user triggers](https://supabase.com/docs/guides/auth/managing-user-data).
+
+## Baseball scores
+
+Apply `20261115000000_collect_baseball_scores.sql` before running `npm run collect:baseball`.
+The separate baseball worker uses the same server-only Supabase credentials and
+stores observations in `baseball_games` and `baseball_score_changes`. Authenticated
+users can read them; only the server can call `record_baseball_observation`.
+Run `npm run collect:all` to start all collectors, or run individual collectors separately.
+
+## Basketball scores
+
+Apply `20261116000000_collect_basketball_scores.sql` before running
+`npm run collect:basketball`. One worker collects both men’s and women’s scores
+using the server-only Supabase credentials. Each team has its own games and
+score change tables with authenticated read access and server-only ingestion.

@@ -3,7 +3,7 @@ const assert = require("node:assert/strict");
 const { setTimeout: sleep } = require("node:timers/promises");
 const {
   scoreValue, normalizeGame, retryAfterMilliseconds, seasonsToDiscover, createFootballProvider,
-} = require("../footballProvider");
+} = require("../collectors/football/footballProvider");
 const { espnEvent } = require("./fixtures");
 
 const now = () => new Date("2026-11-07T20:15:00Z");

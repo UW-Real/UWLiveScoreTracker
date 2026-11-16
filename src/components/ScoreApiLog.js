@@ -3,7 +3,7 @@ export default function ScoreApiLog({ entries }) {
     <details className="score-api-log" open>
       <summary>Score API · development log</summary>
       <p className="score-api-log-description">
-        Browser → GET /score → stored Supabase observations. The separate collector fetches ESPN.
+        Browser → score API → stored Supabase observations. Collectors fetch ESPN.
         Latest 10 requests; full details are also in the browser console.
       </p>
       {entries.length === 0 ? <p className="score-api-log-description">Waiting for the first response…</p> : (

@@ -1,7 +1,7 @@
 const STOPPED_STATUSES = ["STATUS_CANCELED", "STATUS_CANCELLED", "STATUS_POSTPONED"];
 
 function footballGames(response) {
-  const games = [response?.game, response?.nextGame].filter(Boolean);
+  const games = [response?.game, response?.nextGame, ...(response?.previousGames || [])].filter(Boolean);
   return games.filter((game, index) => games.findIndex((entry) => entry.eventId === game.eventId) === index)
     .map((game) => ({
       id: game.eventId,

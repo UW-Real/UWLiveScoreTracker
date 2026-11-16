@@ -1,7 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const { EventEmitter } = require("node:events");
-const { buildScoreResponse, handleScore, scoreRequestDiagnostics } = require("../score");
+const { buildScoreResponse, handleScore, readPreviousGames, scoreRequestDiagnostics } = require("../api/score");
 const { observation } = require("./fixtures");
 
 const now = new Date("2026-11-07T20:16:00Z");
@@ -37,10 +37,12 @@ function fakeSupabase(rows, count = 0, error = null) {
   let index = 0;
   return { from() {
     const data = rows[index++] || null;
+    let isRange = false;
     return { select() { return this; }, eq() { return this; }, not() { return this; },
       order() { return this; }, limit() { return this; },
+      range() { isRange = true; return this; },
       maybeSingle: async () => ({ data, error }),
-      then(resolve, reject) { return Promise.resolve({ count, error }).then(resolve, reject); } };
+      then(resolve, reject) { return Promise.resolve(isRange ? { data: data || [], error } : { count, error }).then(resolve, reject); } };
   } };
 }
 
@@ -62,6 +64,44 @@ test("route reads stored results without contacting ESPN", async () => {
   await handleScore({ supabase: fakeSupabase([null, observation({ completed: true }), null]) }, res);
   assert.equal(res.statusCode, 200);
   assert.equal(res.body.game.eventId, "401858516");
+});
+
+test("football route includes stored completed games with public fields", async () => {
+  const final = observation({ completed: true, state: "post" });
+  const older = observation({ event_id: "123", completed: true, state: "post" });
+  const res = response();
+  await handleScore({ supabase: fakeSupabase([null, final, null, [final, older]]) }, res);
+  assert.deepEqual(res.body.previousGames.map((game) => game.eventId), [final.event_id, "123"]);
+  assert.equal("next_poll_at" in res.body.previousGames[0], false);
+});
+
+test("football history reads every page in stable newest-first order", async () => {
+  const first = Array.from({ length: 500 }, (_, index) => ({ event_id: String(index) }));
+  const calls = [];
+  const client = { from(table) { calls.push(["from", table]); return {
+    select() { return this; }, eq() { return this; },
+    order(column, options) { calls.push([column, options.ascending]); return this; },
+    async range(start, end) { calls.push([start, end]); return { data: start === 0 ? first : [{ event_id: "last" }], error: null }; },
+  }; } };
+  const games = await readPreviousGames(client);
+  assert.equal(games.length, 501);
+  assert.deepEqual(calls.slice(0, 4), [["from", "football_games"], ["kickoff", false], ["event_id", false], [0, 499]]);
+  assert.deepEqual(calls.at(-1), [500, 999]);
+});
+
+test("baseball and basketball routes return each team's completed games", async () => {
+  for (const table of ["baseball_games", "mens_basketball_games", "womens_basketball_games"]) {
+    const final = observation({ completed: true, state: "post" });
+    const older = observation({ event_id: "123", completed: true, state: "post" });
+    const source = fakeSupabase([null, final, null, [final, older]]);
+    const tables = [];
+    const res = response();
+    await handleScore({ supabase: { from(name) { tables.push(name); return source.from(name); } } }, res, table);
+    assert.equal(res.statusCode, 200);
+    assert.deepEqual(tables, [table, table, table, table]);
+    assert.deepEqual(res.body.previousGames.map((game) => game.eventId), [final.event_id, "123"]);
+    assert.equal("next_poll_at" in res.body.previousGames[0], false);
+  }
 });
 
 test("a collected season containing only stopped games is not treated as uninitialized", async () => {

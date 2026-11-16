@@ -1,7 +1,7 @@
 const { setTimeout: sleep } = require("node:timers/promises");
 const { createFootballProvider } = require("./footballProvider");
 const { createFootballStore } = require("./footballStore");
-const { createServerSupabaseClient } = require("./supabase");
+const { createServerSupabaseClient } = require("../../server/supabase");
 
 const POLL_MS = 15_000;
 const DISCOVERY_MS = 60 * 60 * 1000;
@@ -10,7 +10,7 @@ function retryDelay(attempt, retryAfterMs = 0) {
   return Math.max(Math.min(POLL_MS * 2 ** Math.min(attempt - 1, 5), 300_000), retryAfterMs);
 }
 
-function createCollector({ provider, store, now = () => new Date(), log = (entry) => console.log(JSON.stringify(entry)) }) {
+function createCollector({ provider, store, now = () => new Date(), log = (entry) => console.log(JSON.stringify(entry)), sport = "football" }) {
   let discoverAt = 0;
   let blockedUntil = 0;
   const retries = new Map();
@@ -21,7 +21,7 @@ function createCollector({ provider, store, now = () => new Date(), log = (entry
     retries.set(key, { attempt, at: now().getTime() + delay });
     // Retry-After applies to the provider as a whole, not just this game.
     if (error.status === 429 || error.retryAfterMs) blockedUntil = now().getTime() + delay;
-    log({ event: "football_collection_error", task: key, attempt, retryInMs: delay,
+    log({ event: `${sport}_collection_error`, task: key, attempt, retryInMs: delay,
       at: now().toISOString(), error: error.message });
   }
 
@@ -36,7 +36,7 @@ function createCollector({ provider, store, now = () => new Date(), log = (entry
         }
         retries.delete("discovery");
         discoverAt = now().getTime() + DISCOVERY_MS;
-        log({ event: "football_schedule_discovered", games: games.length, at: now().toISOString() });
+        log({ event: `${sport}_schedule_discovered`, games: games.length, at: now().toISOString() });
       } catch (error) {
         if (signal?.aborted) return;
         failure("discovery", error);
@@ -59,7 +59,7 @@ function createCollector({ provider, store, now = () => new Date(), log = (entry
         const observation = await provider.getGame(game, signal);
         await store.record(observation);
         retries.delete(game.event_id);
-        log({ event: "football_game_collected", eventId: game.event_id, state: observation.state,
+        log({ event: `${sport}_game_collected`, eventId: game.event_id, state: observation.state,
           uwScore: observation.uw_score, opponentScore: observation.opponent_score, at: now().toISOString() });
       } catch (error) {
         if (signal?.aborted) return;
