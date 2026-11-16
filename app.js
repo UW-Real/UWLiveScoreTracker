@@ -7,7 +7,7 @@ const crypto = require("node:crypto");
 const next = require("next");
 const { createClient } = require("@supabase/supabase-js");
 const { createUserRouter } = require("./api/user");
-const { createServerSupabaseClient } = require("./api/supabase");
+const { createServerSupabaseClient } = require("./server/supabase");
 
 if (process.env.NODE_ENV !== "production") {
   dotenv.config({ path: ".env.development" });

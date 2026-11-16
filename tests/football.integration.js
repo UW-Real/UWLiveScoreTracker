@@ -8,11 +8,11 @@ const { spawn } = require("node:child_process");
 const { once } = require("node:events");
 const express = require("express");
 const { createClient } = require("@supabase/supabase-js");
-const { createServerSupabaseClient } = require("../supabase");
-const { createFootballProvider } = require("../footballProvider");
-const { createFootballStore } = require("../footballStore");
-const { createCollector } = require("../collectScores");
-const { Router } = require("../score");
+const { createServerSupabaseClient } = require("../server/supabase");
+const { createFootballProvider } = require("../collectors/football/footballProvider");
+const { createFootballStore } = require("../collectors/football/footballStore");
+const { createCollector } = require("../collectors/football/collectScores");
+const { Router } = require("../api/score");
 const { espnEvent } = require("./fixtures");
 
 function localUrl(value) {
@@ -35,7 +35,7 @@ async function listen(server) {
 }
 
 async function runWorker(url, key) {
-  const child = spawn(process.execPath, ["api/collectScores.js"], {
+  const child = spawn(process.execPath, ["collectors/football/collectScores.js"], {
     env: { ...process.env, NODE_ENV: "production", NEXT_PUBLIC_SUPABASE_URL: url,
       SUPABASE_SECRET_KEY: key, SUPABASE_SERVICE_ROLE_KEY: "" },
     stdio: ["ignore", "pipe", "pipe"],

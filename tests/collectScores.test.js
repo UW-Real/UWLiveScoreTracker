@@ -1,8 +1,8 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { createCollector, retryDelay, DISCOVERY_MS } = require("../collectScores");
-const { FeedError } = require("../footballProvider");
-const { createFootballStore } = require("../footballStore");
+const { createCollector, retryDelay, DISCOVERY_MS } = require("../collectors/football/collectScores");
+const { FeedError } = require("../collectors/football/footballProvider");
+const { createFootballStore } = require("../collectors/football/footballStore");
 const { observation } = require("./fixtures");
 
 function setup() {

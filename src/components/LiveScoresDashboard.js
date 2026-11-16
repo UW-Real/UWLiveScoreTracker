@@ -10,6 +10,10 @@ import ScoreApiLog from "@/components/ScoreApiLog";
 
 export default function LiveScoresDashboard() {
   const [result, setResult] = useState(null);
+  const [baseball, setBaseball] = useState(null);
+  const [baseballError, setBaseballError] = useState(null);
+  const [basketball, setBasketball] = useState({});
+  const [basketballErrors, setBasketballErrors] = useState({});
   const [pending, setPending] = useState(true);
   const [error, setError] = useState(null);
   const [refreshIndex, setRefreshIndex] = useState(0);
@@ -60,6 +64,55 @@ export default function LiveScoresDashboard() {
     };
   }, [refreshIndex]);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    const timers = {};
+    async function refreshBasketball(sport) {
+      let interval = 60_000;
+      try {
+        const response = await getScore({ sport, signal: controller.signal,
+          onDebug: (entry) => { if (!controller.signal.aborted) setRequestLog((previous) => [entry, ...previous].slice(0, 10)); } });
+        if (controller.signal.aborted) return;
+        setBasketball((previous) => ({ ...previous, [sport]: response }));
+        setBasketballErrors((previous) => ({ ...previous, [sport]: null }));
+        interval = scoreRefreshInterval(response);
+      } catch (requestError) {
+        if (controller.signal.aborted) return;
+        const message = [401, 403].includes(requestError.response?.status) ? "Sign in to view basketball scores."
+          : requestError.response?.data?.error?.reason || "Unable to refresh basketball scores.";
+        setBasketballErrors((previous) => ({ ...previous, [sport]: message }));
+      } finally {
+        if (!controller.signal.aborted) timers[sport] = setTimeout(() => refreshBasketball(sport), interval);
+      }
+    }
+    ["mens-basketball", "womens-basketball"].forEach(refreshBasketball);
+    return () => { controller.abort(); Object.values(timers).forEach(clearTimeout); };
+  }, [refreshIndex]);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let timer;
+    async function refreshBaseball() {
+      let interval = 60_000;
+      try {
+        const response = await getScore({ sport: "baseball", signal: controller.signal,
+          onDebug: (entry) => { if (!controller.signal.aborted) setRequestLog((previous) => [entry, ...previous].slice(0, 10)); } });
+        if (controller.signal.aborted) return;
+        setBaseball(response);
+        setBaseballError(null);
+        interval = scoreRefreshInterval(response);
+      } catch (error) {
+        if (controller.signal.aborted) return;
+        setBaseballError([401, 403].includes(error.response?.status) ? "Sign in to view baseball scores."
+          : error.response?.data?.error?.reason || "Unable to refresh baseball scores.");
+      } finally {
+        if (!controller.signal.aborted) timer = setTimeout(refreshBaseball, interval);
+      }
+    }
+    refreshBaseball();
+    return () => { controller.abort(); clearTimeout(timer); };
+  }, [refreshIndex]);
+
   function refreshNow() {
     setPending(true);
     setRefreshIndex((index) => index + 1);
@@ -89,13 +142,21 @@ export default function LiveScoresDashboard() {
           {result && !error.signInRequired && " Showing the last successful response."}
         </p>
       )}
+      {baseballError && baseball && <p className="form-notice error">Baseball: {baseballError} Showing the last successful response.</p>}
+      {baseball?.stale && <p className="form-notice error">The baseball feed is delayed. Showing the latest stored scores.</p>}
+      {["mens-basketball", "womens-basketball"].map((sport) => basketball[sport] && (basketballErrors[sport] || basketball[sport].stale) && (
+        <p key={sport} className="form-notice error">{sport === "mens-basketball" ? "Men’s" : "Women’s"} basketball: {basketballErrors[sport] || "The score feed is delayed."} Showing the latest stored scores.</p>
+      ))}
       {result?.stale && (
         <p className="form-notice error" role="status">The score feed is delayed. Showing the latest stored scores.</p>
       )}
       <SportTabs
         sports={SPORTS}
-        scoresBySport={{ football: footballGames(result) }}
-        emptyMessages={{ football: pending ? "Loading football scores…"
+        scoresBySport={{ football: footballGames(result), baseball: footballGames(baseball),
+          "mens-basketball": footballGames(basketball["mens-basketball"]), "womens-basketball": footballGames(basketball["womens-basketball"]) }}
+        emptyMessages={{ "mens-basketball": basketballErrors["mens-basketball"] || "No current or upcoming men’s basketball games are available.",
+          "womens-basketball": basketballErrors["womens-basketball"] || "No current or upcoming women’s basketball games are available.",
+          baseball: baseballError || "No current or upcoming baseball games are available.", football: pending ? "Loading football scores…"
           : error?.message || "No current or upcoming football games are available." }}
       />
       {process.env.NODE_ENV === "development" && <ScoreApiLog entries={requestLog} />}

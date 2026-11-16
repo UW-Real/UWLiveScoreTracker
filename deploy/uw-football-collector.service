@@ -9,7 +9,7 @@ User=uw-score-tracker
 WorkingDirectory=/srv/uw-score-tracker
 Environment=NODE_ENV=production
 EnvironmentFile=/etc/uw-score-tracker.env
-ExecStart=/usr/bin/node /srv/uw-score-tracker/api/collectScores.js
+ExecStart=/usr/bin/node /srv/uw-score-tracker/collectors/football/collectScores.js
 Restart=always
 RestartSec=10
 KillSignal=SIGTERM
